@@ -2,6 +2,9 @@
 
 import { Command } from 'commander';
 import { DetectCommand } from './commands/detect.js';
+import { AgeCommand } from './commands/age.js';
+import { UndoCommand } from './commands/undo.js';
+import { StatusCommand } from './commands/status.js';
 import { ConfigManager } from './config/hierarchy.js';
 
 const program = new Command();
@@ -70,21 +73,33 @@ configCmd
     configManager.createLocalConfig('.');
   });
 
-// Main aging command (placeholder)
+// Status command
+program
+  .command('status [directory]')
+  .description('Show vault health and aging statistics')
+  .action(async (directory: string = '.') => {
+    const statusCommand = new StatusCommand();
+    await statusCommand.execute(directory);
+  });
+
+// Main aging command
 program
   .argument('<file>', 'markdown file to age')
   .option('-b, --batch', 'process directory in batch mode')
   .option('-u, --undo', 'restore document from backup')
-  .action((file: string, options) => {
+  .option('--non-interactive', 'skip interactive approval prompts')
+  .action(async (file: string, options) => {
     if (options.undo) {
-      console.log(`Restoring: ${file}`);
-      console.log('TODO: Implement undo functionality');
+      const undoCommand = new UndoCommand();
+      await undoCommand.execute(file);
     } else if (options.batch) {
-      console.log(`Processing directory: ${file}`);
-      console.log('TODO: Implement batch processing');
+      console.log(`Batch processing: ${file}`);
+      console.log('TODO: Implement batch processing in Phase 4');
     } else {
-      console.log(`Aging document: ${file}`);
-      console.log('TODO: Implement aging functionality');
+      const ageCommand = new AgeCommand();
+      await ageCommand.execute(file, {
+        interactive: !options.nonInteractive
+      });
     }
   });
 
